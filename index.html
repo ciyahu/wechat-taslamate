@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>推送设置</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .password-container, .container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 600px;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .password-container {
+            align-items: center;
+        }
+
+        .container {
+            display: none;
+        }
+
+        .label {
+            font-size: 1.2rem;
+            color: #333;
+            flex: 1;
+        }
+
+        .row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 90px;
+            height: 27px;
+            border-radius: 27px;
+            background-color: #ccc;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 40px;
+            height: 21px;
+            border-radius: 50%;
+            background-color: white;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-switch.on {
+            background-color: #34c759;
+        }
+
+        .toggle-switch.on::before {
+            transform: translateX(42px);
+        }
+
+        .extra-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .extra-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .extra-row input[type="text"] {
+            padding: 6.4px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 75px;
+        }
+
+        .extra-row input[disabled] {
+            background-color: #f0f0f0;
+        }
+
+        .extra-row button {
+            padding: 6.4px 9.6px;
+            font-size: 1rem;
+            background-color: #007aff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .extra-row button.disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="password-container" id="password-container">
+        <label for="password">请输入密码：</label>
+        <input type="password" id="password" placeholder="请输入密码">
+        <button onclick="verifyPassword()">确认</button>
+        <p id="error-message" style="color: red; display: none;">密码错误，请重新输入。</p>
+    </div>
+
+    <div class="container" id="main-content">
+        <!-- 动态加载内容 -->
+    </div>
+
+    <script>
+        let authToken = null;
+
+        async function verifyPassword() {
+            const passwordInput = document.getElementById("password");
+            const password = passwordInput.value.trim();
+            const errorMessage = document.getElementById("error-message");
+            const passwordContainer = document.getElementById("password-container");
+            const mainContent = document.getElementById("main-content");
+
+            try {
+                const response = await fetch("/states", {
+                    headers: { Authorization: `Bearer ${password}` }
+                });
+
+                if (response.ok) {
+                    authToken = `Bearer ${password}`;
+                    errorMessage.style.display = "none";
+                    passwordContainer.style.display = "none";
+                    mainContent.style.display = "flex";
+                    fetchInitialStates();
+                } else {
+                    errorMessage.textContent = "密码错误，请重新输入。";
+                    errorMessage.style.display = "block";
+                    passwordInput.value = "";
+                }
+            } catch (error) {
+                errorMessage.textContent = "服务器连接失败，请稍后重试。";
+                errorMessage.style.display = "block";
+            }
+        }
+
+        async function fetchInitialStates() {
+            const response = await fetch("/states", {
+                headers: { Authorization: authToken }
+            });
+
+            if (!response.ok) {
+                alert("无法加载数据，请检查权限。");
+                return;
+            }
+
+            const data = await response.json();
+            const container = document.getElementById("main-content");
+            container.innerHTML = "";
+
+            const buttonNames = [
+                "总开关", "开关门:推送", "挂起，休眠，启动:推送", "上线，离线，行驶:推送", "行驶中推送", "车内有人推送",
+                "充电中推送", "胎压报警推送", "哨兵开关推送", "行程结算是否显示地址"
+            ];
+
+            const extraNames = [
+                "胎压报警推送次数", "定时推送状态(分钟)", "充电中定时推送(分钟)"
+            ];
+
+            buttonNames.forEach((name, index) => {
+                const row = document.createElement("div");
+                row.className = "row";
+                row.innerHTML = `<span class="label">${name}</span>
+                    <div class="toggle-switch ${data.buttons[index] === "ON" ? "on" : "off"}" 
+                        onclick="toggleSwitch(this, ${index})"></div>`;
+                container.appendChild(row);
+            });
+
+            extraNames.forEach((name, num) => {
+                const extraRow = document.createElement("div");
+                extraRow.className = "extra-row";
+                extraRow.id = `extra-row-${num + 1}`;
+                extraRow.innerHTML = `
+                    <label>
+                        <input type="checkbox" id="extra-checkbox-${num + 1}" 
+                            ${data.extras[`EXTRA_CHECKBOX_${num + 1}`] === "ON" ? "checked" : ""} 
+                            onchange="toggleInputState(${num + 1})"> ${name}
+                    </label>
+                    <div class="extra-controls">
+                        <input type="text" id="extra-input-${num + 1}" 
+                            value="${data.extras[`EXTRA_INPUT_${num + 1}`]}" 
+                            ${data.extras[`EXTRA_CHECKBOX_${num + 1}`] === "ON" ? "" : "disabled"} />
+                        <button class="button ${data.extras[`EXTRA_CHECKBOX_${num + 1}`] === "ON" ? "" : "disabled"}" 
+                            id="submit-btn-${num + 1}" onclick="submitExtraData(${num + 1})">提交</button>
+                    </div>`;
+                container.appendChild(extraRow);
+            });
+        }
+
+        async function toggleInputState(num) {
+            const checkbox = document.getElementById(`extra-checkbox-${num}`);
+            const input = document.getElementById(`extra-input-${num}`);
+            const button = document.getElementById(`submit-btn-${num}`);
+            const isChecked = checkbox.checked;
+
+            if (isChecked) {
+                input.disabled = false;
+                button.classList.remove("disabled");
+            } else {
+                input.disabled = true;
+                button.classList.add("disabled");
+            }
+
+            // 发送状态更新到后端
+            await fetch("/extra", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: authToken
+                },
+                body: JSON.stringify({
+                    id: num,
+                    checkbox: isChecked,
+                    input: input.value
+                })
+            });
+        }
+
+        async function submitExtraData(num) {
+            const input = document.getElementById(`extra-input-${num}`).value;
+
+            await fetch("/extra", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: authToken
+                },
+                body: JSON.stringify({
+                    id: num,
+                    checkbox: document.getElementById(`extra-checkbox-${num}`).checked,
+                    input: input
+                })
+            });
+
+            alert("提交成功！");
+        }
+
+        function toggleSwitch(element, index) {
+            const isOn = element.classList.contains("on");
+            const newStatus = isOn ? "OFF" : "ON";
+            element.classList.toggle("on", !isOn);
+            element.classList.toggle("off", isOn);
+
+            fetch("/update", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: authToken
+                },
+                body: JSON.stringify({ id: index, status: newStatus })
+            });
+        }
+    </script>
+</body>
+</html>
