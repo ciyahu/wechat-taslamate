@@ -1,0 +1,24 @@
+
+  wechat-teslamate:
+    image: crpi-imfm7cwd6erou87s.cn-hangzhou.personal.cr.aliyuncs.com/ciyahu/can:wechat-teslamate-latest
+    restart: always
+    environment:
+      - DATABASE_USER=teslamate            # same as teslamate
+      - DATABASE_PASS=123456               # same as teslamate
+      - DATABASE_NAME=teslamate            # same as teslamate
+      - DATABASE_HOST=database             # same as teslamate
+      - MQTT_BROKER_HOST=mosquitto         # same as teslamate
+      - EMAIL_ADDRESS=example@qq.com       # QQ email address
+      - EMAIL_PASSWORD=ursaaaatbcfrbdjc    # QQ email send mail password 
+      - WEB_PASSWORD=teslamate
+    ports:
+      - 7777:7777
+    volumes:
+      - ./wemate:/app/config
+
+
+
+# 把上面内容添加到teslamate安装目录下的docker-compose.yml文件中
+# 环境参数修改为与teslamate一致
+# 申请qq邮箱，开启STMP,开启邮箱授权码填入EMAIL_PASSWORD，邮箱地址填入EMAIL_ADDRESS，微信搜索邮箱提醒登录邮箱
+# 登录ip:7777管理推送，默认密码teslamate
