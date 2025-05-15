@@ -1,281 +1,2197 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>推送设置</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-            margin: 0;
-            font-family: 'Arial', sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>推送设置</title>
+  <style>
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  min-height: 100vh;
+  padding-top: env(safe-area-inset-top, 20px);
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  overflow-y: auto;
+  background: none; /* 移除 body 的背景图 */
+}
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url('/config/back.jpg') no-repeat center center;
+  background-size: cover;
+  z-index: -1; /* 已经设置，但确认生效 */
+}
 
-        .password-container, .container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 600px;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+    .container {
+  display: none;
+  flex-direction: column;
+  gap: 15px;
+  width: 90%;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin: 10px auto; /* 一致的间距和居中 */
+}
+.password-container {
+  display: flex; /* 默认显示 */
+  flex-direction: column;
+  gap: 15px;
+  width: 90%;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.5); /* 提高透明度以确保可见 */
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin: 20vh auto 10px; /* 从顶部留出空间 */
+  align-items: center;
+  text-align: center;
+  z-index: 9999;
+  position: relative;
+}
+    .container {
+  display: none;
+  position: relative;
+  margin-top: 10px; /* 原有外边距 */
+  background: rgba(255, 255, 255, 0.1);
+  /* 新增：初始时预留空间，避免被 message-frame 遮挡 */
+  padding-top: 10px; /* 可选：增加内部填充 */
+}
+    .confirm-btn {
+      padding: 8px 16px;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+    .confirm-btn:hover {
+      opacity: 0.9;
+    }
+    .confirm-btn.disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    /* 开关整体外层盒子 */
+    .switch-box {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 5px;
+    }
+    .switch-item {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 5px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      background: rgba(255, 255, 255, 0.6);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .switch-item .label {
+      font-size: 0.8rem;
+      color: #333;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
+    }
+    .toggle-switch {
+  position: relative;
+  width: 44px; /* 55px * 0.8 */
+  height: 25.6px; /* 32px * 0.8 */
+  border-radius: 26.4px; /* 33px * 0.8 */
+  background-color: #ccc;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.toggle-switch::before {
+  content: '';
+  position: absolute;
+  top: 1.6px;  /* 2px * 0.8 */
+  left: 1.6px; /* 2px * 0.8 */
+  width: 22.4px; /* 28px * 0.8 */
+  height: 22.4px; /* 28px * 0.8 */
+  border-radius: 50%;
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease;
+}
+.toggle-switch.on {
+  background-color: #34c759;
+}
+.toggle-switch.on::before {
+  transform: translateX(17.6px); /* 22px * 0.8 */
+}
 
-        .password-container {
-            align-items: center;
-        }
+.material-checkbox {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #000000;
+  cursor: pointer;
+  user-select: none;
+}
 
-        .container {
-            display: none;
-        }
+.material-checkbox input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 
-        .label {
-            font-size: 1.2rem;
-            color: #333;
-            flex: 1;
-        }
+.checkmark {
+  position: relative;
+  display: inline-block;
+  width: 16px; /* 原 20px * 0.8 */
+  height: 16px; /* 原 20px * 0.8 */
+  margin-right: 5px; /* 原 1px，可改为 0.8px */
+  border: 1.6px solid #454B00; /* 原 2px * 0.8 */
+  border-radius: 4px;
+  transition: all 0.3s;
+}
 
-        .row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+.material-checkbox input[type="checkbox"]:checked ~ .checkmark {
+  background-color: #2F3300;
+}
 
-        .toggle-switch {
-            position: relative;
-            width: 90px;
-            height: 27px;
-            border-radius: 27px;
-            background-color: #ccc;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
+.material-checkbox input[type="checkbox"]:checked ~ .checkmark:after {
+  content: "";
+  position: absolute;
+  top: 1.6px; /* 原 2px * 0.8 */
+  left: 4.8px; /* 原 6px * 0.8 */
+  width: 3.2px; /* 原 4px * 0.8 */
+  height: 8px; /* 原 10px * 0.8 */
+  border: solid white;
+  border-width: 0 1.6px 1.6px 0; /* 原 2px * 0.8 */
+  transform: rotate(45deg);
+}
 
-        .toggle-switch::before {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 40px;
-            height: 21px;
-            border-radius: 50%;
-            background-color: white;
-            transition: transform 0.3s ease;
-        }
+.material-checkbox input[type="checkbox"]:focus ~ .checkmark {
+  box-shadow: 0 0 0 2px #dfec5065;
+}
 
-        .toggle-switch.on {
-            background-color: #34c759;
-        }
+.material-checkbox:hover input[type="checkbox"]:not(:checked) ~ .checkmark {
+  border-color: #C3CF34;
+}
 
-        .toggle-switch.on::before {
-            transform: translateX(42px);
-        }
+.material-checkbox input[type="checkbox"]:disabled ~ .checkmark {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
-        .extra-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+.material-checkbox input[type="checkbox"]:disabled:hover ~ .checkmark {
+  border-color: #4d4d4d;
+}
 
-        .extra-controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+/* ... 其他样式保持不变 ... */
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 5px;
+      justify-content: center;
+    }
+    .action-buttons button {
+      padding: 10px 20px;
+      font-size: 0.8rem;
+      background-color: #007aff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      flex: 0 0 calc(50% - 15px);
+    }
+    .action-buttons button:hover {
+      background-color: #0056d2;
+    }
+    .valueDisplay {
+      font-size: 0.8rem;
+      margin-bottom: 0px;
+    }
+    #error-message {
+      color: red;
+      display: none;
+    }
+    #toast {
+      position: fixed;
+      bottom: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #333;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 25px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      z-index: 9999;
+    }
+    #toast.show {
+      bottom: 20px;
+    }
 
-        .extra-row input[type="text"] {
-            padding: 6.4px;
-            font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            width: 75px;
-        }
 
-        .extra-row input[disabled] {
-            background-color: #f0f0f0;
-        }
+    .message-frame {
+  width: 85%;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px auto; /* 水平居中并添加上下间距 */
+  overflow: visible; /* 确保子元素可以溢出 */
+}
 
-        .extra-row button {
-            padding: 6.4px 9.6px;
-            font-size: 1rem;
-            background-color: #007aff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+.message-content {
+  font-size: 0.9rem;
+  color: #333;
+  white-space: pre-wrap;
+  line-height: 1;
+  text-align: center;
+}
 
-        .extra-row button.disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-    </style>
+#message-frame-2 {
+  width: 90%;
+  max-width: 600px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px auto; /* 水平居中并添加上下间距 */
+  overflow: visible; /* 确保子元素可以溢出 */
+}
+
+#message-content-2 {
+  font-size: 0.9rem;
+  color: #333;
+  white-space: pre-wrap;
+  line-height: 2;
+  text-align: center;
+}
+
+.gps-map-container {
+  position: relative;
+  width: 100%;
+  padding: 0;
+}
+
+#map-container {
+  width: 100%;
+  height: 200px; /* 默认高度改为 200px，与你的实际需求一致 */
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+}
+
+#map-container.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh !important; /* 提高优先级 */
+  z-index: 1000;
+  border-radius: 0;
+}
+
+.fullscreen-btn {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 20px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  z-index: 1100;
+  transition: opacity 0.3s;
+  opacity: 1;
+}
+
+.fullscreen-btn:hover {
+  opacity: 0.9;
+}
+.btn {
+  position: absolute;
+  top: 10px;
+  z-index: 1001;
+  font-size: 1rem;
+  padding: 5px 10px;
+}
+.btn-left {
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  opacity: 1;
+  font-size: 1rem;
+}
+#rotate-btn {
+  left: 80px; /* 调整位置，根据实际需要微调 */
+}
+#follow-btn {
+  left: 150px; /* 调整位置，根据实际需要微调 */
+}
+
+
+    .battery-bar {
+      position: relative;
+      width: 100%;
+      height: 20px;
+      background: #e0e0e0;
+      border-radius: 20px;
+      overflow: hidden;
+      margin: 0px 0;
+    }
+
+    .battery-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      /* 模拟从后端传来的内联样式：背景和宽度 */
+      transition: width 0.4s ease;
+      z-index: 1;
+    }
+
+    .battery-text {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      line-height: 20px;
+      font-size: 12px;
+      color: white;
+      z-index: 2;
+    }
+    .btn-left.active-btn {
+  background: #ff4444; /* 点击后变为红色 */
+}
+
+#upload-frame {
+  width: 100%; /* 与其他 .message-frame 一致 */
+  max-width: 600px; /* 与其他 .message-frame 一致 */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  margin-top: 0px;
+  padding: 8px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+#upload-content {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* 水平居中 */
+  gap: 10px;
+  width: 100%; /* 撑满父容器 */
+}
+
+#background-upload {
+  font-size: 0.8rem;
+  color: #333;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+#upload-btn {
+  padding: 7px 20px;
+  background: #007aff;
+  font-size: 0.8rem;
+  color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+#upload-btn:hover {
+  opacity: 0.9;
+}
+
+#upload-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+#preview {
+    margin-top: 10px;
+    max-width: 300px;
+  }
+
+  </style>
+  <script charset="utf-8" src="https://map.qq.com/api/gljs?v=1.exp&key=HBEBZ-K7J64-DVHU7-KWGPB-SK6WV-UFFYJ"></script>
 </head>
 <body>
-    <div class="password-container" id="password-container">
-        <label for="password">请输入密码：</label>
-        <input type="password" id="password" placeholder="请输入密码">
-        <button onclick="verifyPassword()">确认</button>
-        <p id="error-message" style="color: red; display: none;">密码错误，请重新输入。</p>
+  <div class="password-container" id="password-container">
+    <label for="password">系统登录</label>
+    <input type="password" id="password" placeholder="请输入管理密码" />
+    <button class="confirm-btn" onclick="verifyPassword()">登录</button>
+    <p id="error-message">密码错误，请重新输入。</p>
+  </div>
+
+  <div class="message-frame" id="message-frame" style="display: none;">
+    <div class="message-content" id="message-content">
+      <!-- 消息内容将动态填充 -->
     </div>
-
-    <div class="container" id="main-content">
-        <!-- 动态加载内容 -->
+    <div class="gps-map-container" id="gps-map-container">
+      <div id="map-container">
+        <input type="button" class="btn btn-left" id="toggle-map-btn" value="卫星图">
+        <input type="button" class="btn btn-left" id="rotate-btn" value="旋转" style="left: 80px;">
+        <input type="button" class="btn btn-left" id="follow-btn" value="不跟随" style="left: 150px;">
+        <button id="fullscreen-btn" class="fullscreen-btn">全屏</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        let authToken = null;
+  <!-- 第二个 message-frame -->
+<div class="message-frame" id="message-frame-2" style="display: none;">
+  <div class="message-content" id="message-content-2">
+    <!-- 电池信息将动态填充 -->
+  </div>
+</div>
 
-        async function verifyPassword() {
-            const passwordInput = document.getElementById("password");
-            const password = passwordInput.value.trim();
-            const errorMessage = document.getElementById("error-message");
-            const passwordContainer = document.getElementById("password-container");
-            const mainContent = document.getElementById("main-content");
+  <div class="container" id="main-content">
+    <!-- 动态加载内容 -->
+  </div>
+  
+  <div id="toast"></div>
 
-            try {
-                const response = await fetch("/states", {
-                    headers: { Authorization: `Bearer ${password}` }
-                });
+  <script>
+    let authToken = null;
+    let mapKey = null; // 全局变量 mapKey
 
-                if (response.ok) {
-                    authToken = `Bearer ${password}`;
-                    errorMessage.style.display = "none";
-                    passwordContainer.style.display = "none";
-                    mainContent.style.display = "flex";
-                    fetchInitialStates();
-                } else {
-                    errorMessage.textContent = "密码错误，请重新输入。";
-                    errorMessage.style.display = "block";
-                    passwordInput.value = "";
+// 函数：动态加载地图脚本
+function loadMapScript(url) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.charset = "utf-8";
+    script.src = url;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+async function loadMapKey() {
+  if (mapKey) return; // 如果已加载，直接返回
+  const mapKeyResponse = await fetch("/get/mapkey", {
+    headers: { Authorization: authToken }
+  });
+  if (!mapKeyResponse.ok) {
+    throw new Error("无法获取地图 key");
+  }
+  const mapKeyData = await mapKeyResponse.json();
+  mapKey = mapKeyData.mapKey;
+  await loadMapScript(`https://map.qq.com/api/gljs?v=1.exp&key=${mapKey}`);
+}
+
+
+
+    function showToast(message, duration = 2000) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, duration);
+    }
+
+    function setCookie(name, value, days = 36500) {
+      const date = new Date();
+      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+      const expires = "; expires=" + date.toUTCString();
+      document.cookie = name + "=" + (value || "") + expires + "; path=/;";
+    }
+
+    function getCookie(name) {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(";");
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i].trim();
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+      }
+      return null;
+    }
+
+    function deleteCookie(name) {
+      document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    }
+
+    function logout() {
+      deleteCookie("authToken");
+      location.reload();
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+  const token = getCookie("authToken");
+  const passwordContainer = document.getElementById("password-container");
+  const mainContent = document.getElementById("main-content");
+
+  if (token) {
+    authToken = `Bearer ${token}`;
+    passwordContainer.style.display = "none"; // 已登录，隐藏密码框
+    mainContent.style.display = "flex"; // 显示主内容
+    try {
+      await loadMapKey();
+      await fetchInitialStates();
+    } catch (error) {
+      deleteCookie("authToken");
+      showToast("登录失效，请重新登录");
+      location.reload();
+    }
+  } else {
+    passwordContainer.style.display = "flex"; // 未登录，显示密码框
+    mainContent.style.display = "none"; // 隐藏主内容
+  }
+});
+
+    async function verifyPassword() {
+      const password = document.getElementById("password").value.trim();
+      const errorMessage = document.getElementById("error-message");
+      try {
+        const response = await fetch("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password })
+        });
+        if (response.ok) {
+          const { token } = await response.json();
+          setCookie("authToken", token, 36500);
+          authToken = `Bearer ${token}`;
+          await loadMapKey();
+
+          document.getElementById("password-container").style.display = "none";
+          document.getElementById("main-content").style.display = "flex";
+          fetchInitialStates();
+        } else {
+          errorMessage.textContent = "密码错误，请重新输入。";
+          errorMessage.style.display = "block";
+        }
+      } catch (error) {
+        errorMessage.textContent = "服务器连接失败，请稍后重试。";
+        errorMessage.style.display = "block";
+      }
+    }
+
+    async function fetchInitialStates() {
+      try {
+        const response = await fetch("/states", {
+          headers: { Authorization: authToken }
+        });
+        if (response.status === 401) {
+          deleteCookie("authToken");
+          showToast("登录已过期，请重新登录");
+          location.reload();
+          return;
+        }
+        if (!response.ok) {
+          showToast("无法加载数据，请检查权限。");
+          return;
+        }
+        const data = await response.json();
+        const container = document.getElementById("main-content");
+        container.innerHTML = "";
+
+// 显示两个 frame
+const messageFrame1 = document.getElementById("message-frame");
+    const messageFrame2 = document.getElementById("message-frame-2");
+    messageFrame1.style.display = "flex";
+    messageFrame2.style.display = "flex";
+
+    let marker, label, polylineLayer;
+    let isRotating = false;  // 默认不旋转
+    let isFollowing = true;  // 默认跟随车
+
+    function initMap(lat, lng, heading = 0, initialSpeed = "未知") {
+  const center = new TMap.LatLng(lat, lng);
+  map = new TMap.Map("map-container", {
+    zoom: 18,
+    mapStyleId: 'style1',
+    center: center,
+    pitch: 0,
+    rotation: 0,
+    baseMap: [
+          { type: 'vector' }, // 设置矢量底图
+          {
+            type: 'traffic',
+            opacity: 1,
+          }, // 设置路况底图
+        ],
+  });
+
+  marker = new TMap.MultiMarker({
+    map: map,
+    styles: {
+      marker: new TMap.MarkerStyle({
+        width: 30,
+        height: 30,
+        anchor: { x: 15, y: 15 },
+        src: "/car.png",
+        rotate: heading,
+      }),
+    },
+    geometries: [
+      {
+        position: center,
+        id: "marker",
+        styleId: "marker",
+        rotate: heading,
+      },
+    ],
+  });
+
+  label = new TMap.MultiLabel({
+    map: map,
+    styles: {
+      label: new TMap.LabelStyle({
+        color: "#fff",
+        size: 18,
+        backgroundColor: "rgba(0, 0, 0, 0.4)",
+        borderRadius: 3,
+        offset: { x: 0, y: 30 },
+        padding: "2px 5px",
+        fontFamily: "Arial Black, Gadget, sans-serif"
+      }),
+    },
+    geometries: [
+      {
+        id: "label",
+        styleId: "label",
+        position: center,
+        content: `车速: ${initialSpeed}`,
+      },
+    ],
+  });
+
+  // 初始化空的折线图层
+  polylineLayer = new TMap.MultiPolyline({
+    map: map,
+    styles: {
+      style_blue: new TMap.PolylineStyle({
+        color: "#3777FF",
+        width: 4,
+        borderWidth: 2,
+        borderColor: "#FFF",
+        lineCap: "round",
+        eraseColor: "rgba(190,188,188,1)",
+      }),
+    },
+    geometries: [
+      {
+        id: "erasePath",
+        styleId: "style_blue",
+        paths: [], // 初始为空，等待 path2 数据
+      },
+    ],
+  });
+
+  // 新增：初始化 navigationPolylineLayer
+  navigationPolylineLayer = new TMap.MultiPolyline({
+    map: map,
+    styles: {
+      style_blue: new TMap.PolylineStyle({
+        color: "#FF0000",
+        width: 5,
+        borderWidth: 2,
+        borderColor: "#FFF",
+        lineCap: "round",
+      }),
+    },
+    geometries: [
+      {
+        id: "navigationPath",
+        styleId: "style_blue",
+        paths: [], // 初始为空路径
+      },
+    ],
+  });
+
+}
+
+const rotateBtn = document.getElementById("rotate-btn");
+const followBtn = document.getElementById("follow-btn");
+function toggleRotate() {
+  isRotating = !isRotating;
+  rotateBtn.value = isRotating ? "朝北" : "旋转";
+  rotateBtn.classList.toggle("active-btn"); // 切换红色背景
+  showToast(isRotating ? "已启用旋转" : "已设置为朝北");
+}
+
+  rotateBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    toggleRotate();
+  });
+  rotateBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    toggleRotate();
+  });
+  // 跟随按钮事件
+  function toggleFollow() {
+  isFollowing = !isFollowing;
+  followBtn.value = isFollowing ? "不跟随" : "跟随车";
+  followBtn.classList.toggle("active-btn"); // 切换红色背景
+  showToast(isFollowing ? "已启用跟随" : "已禁用跟随");
+}
+
+  followBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    toggleFollow();
+  });
+  followBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    toggleFollow();
+  });
+
+
+
+// 获取并显示消息和 GPS 的函数
+async function fetchMessages() {
+  try {
+    const msgResponse = await fetch("/msg", {
+      method: "GET",
+      headers: { Authorization: authToken },
+    });
+    if (msgResponse.ok) {
+      const msgData = await msgResponse.json();
+
+      // 处理车辆状态内容
+      const messageContent = msgData.msg || "暂无消息";
+      const contentElement = document.getElementById("message-content");
+      contentElement.innerHTML = messageContent;
+
+      // 修复电量条填充显示
+      const batteryFill = contentElement.querySelector('.battery-fill');
+      if (batteryFill) {
+        batteryFill.style.width = batteryFill.style.width; // 触发重绘
+      }
+
+      // 处理电池健康信息
+      const batteryContent = msgData.bat || "暂无电池信息";
+      document.getElementById("message-content-2").innerHTML = batteryContent;
+
+      // 处理 GPS 数据
+      const gpsContent = msgData.gps || "暂无 GPS 数据";
+      const heading = parseFloat(msgData.heading) || 0;
+      const speed2 = msgData.speed2 !== undefined ? msgData.speed2 : "未知";
+      const path2 = msgData.path2 || [];
+
+      if (gpsContent !== "暂无 GPS 数据" && typeof gpsContent === "string") {
+        const [latStr, lngStr] = gpsContent.split(",");
+        const lat = parseFloat(latStr?.trim());
+        const lng = parseFloat(lngStr?.trim());
+
+        if (!isNaN(lat) && !isNaN(lng)) {
+          const newPosition = new TMap.LatLng(lat, lng);
+
+          if (!map) {
+            // 初次初始化地图
+            initMap(lat, lng, heading, speed2);
+          } else {
+            // 获取当前标记点的几何数据
+            const markerData = marker.getGeometryById("marker");
+            const currentPosition = markerData.position;
+
+            if (!isRotating) {
+  // 不旋转：固定朝北，车辆图标随 heading 旋转
+  marker.setStyles({
+    marker: new TMap.MarkerStyle({
+      width: 30,
+      height: 30,
+      anchor: { x: 15, y: 15 },
+      src: "/car.png",
+      rotate: heading,
+    }),
+    
+  });
+  // if (isRotating) map.rotateTo(heading, { duration: 1000 }); // 地图随车辆方向旋转
+} else {
+  // 旋转：地图随 heading 旋转，车辆图标不指定旋转角度（默认朝上）
+  marker.setStyles({
+    marker: new TMap.MarkerStyle({
+      width: 30,
+      height: 30,
+      anchor: { x: 15, y: 15 },
+      src: "/car.png",
+    }),
+  });
+ //  map.rotateTo(heading, { duration: 1000 }); // 地图随车辆方向旋转
+}
+
+// 判断坐标是否相等，仅在不相等时执行 moveAlong
+if (currentPosition.lat !== newPosition.lat || currentPosition.lng !== newPosition.lng) {
+              const path = [currentPosition, newPosition]; // 从当前位置到新位置的路径
+              marker.moveAlong(
+                {
+                  "marker": {
+                    path: path,
+                    speed: 1000, // 速度（单位：米/秒），可根据需求调整
+                  },
+                },
+                {
+                  autoRotation: true, // 自动根据路径方向旋转
+                  duration: 500,     // 动画持续时间（毫秒），可调整
                 }
-            } catch (error) {
-                errorMessage.textContent = "服务器连接失败，请稍后重试。";
-                errorMessage.style.display = "block";
-            }
-        }
-
-        async function fetchInitialStates() {
-            const response = await fetch("/states", {
-                headers: { Authorization: authToken }
-            });
-
-            if (!response.ok) {
-                alert("无法加载数据，请检查权限。");
-                return;
+              );
             }
 
-            const data = await response.json();
-            const container = document.getElementById("main-content");
-            container.innerHTML = "";
+            // 更新标签（label）
+            if (label) {
+              const labelData = label.getGeometryById("label");
+              Object.assign(labelData, {
+                position: newPosition,
+                content: `车速: ${speed2}`,
+              });
+              label.updateGeometries([labelData]);
+            }
 
-            const buttonNames = [
-                "总开关", "开关门:推送", "挂起，休眠，启动:推送", "上线，离线，行驶:推送", "行驶中推送", "车内有人推送",
-                "充电中推送", "胎压报警推送", "哨兵开关推送", "行程结算是否显示地址"
-            ];
+            // 处理导航
+            let pl = msgData.navigation_path.map(point => new TMap.LatLng(point.lat, point.lng));
+            navigationPolylineLayer.updateGeometries([
+    {
+      id: "navigationPath",
+      styleId: "style_blue",
+      paths: pl,
+    },
+  ]);
 
-            const extraNames = [
-                "胎压报警推送次数", "定时推送状态(分钟)", "充电中定时推送(分钟)"
-            ];
 
-            buttonNames.forEach((name, index) => {
-                const row = document.createElement("div");
-                row.className = "row";
-                row.innerHTML = `<span class="label">${name}</span>
-                    <div class="toggle-switch ${data.buttons[index] === "ON" ? "on" : "off"}" 
-                        onclick="toggleSwitch(this, ${index})"></div>`;
-                container.appendChild(row);
-            });
+            // 更新路径（path2）
+            if (path2.length > 0) {
+              const pathLatLngs = path2
+                .map((point, index) => {
+                  const lat = parseFloat(point.lat);
+                  const lng = parseFloat(point.lng);
+                  if (!isNaN(lat) && !isNaN(lng)) {
+                    return new TMap.LatLng(lat, lng);
+                  } else {
+                    console.warn(`Invalid lat/lng at index ${index}:`, point);
+                    return null;
+                  }
+                })
+                .filter(point => point !== null);
 
-            extraNames.forEach((name, num) => {
-                const extraRow = document.createElement("div");
-                extraRow.className = "extra-row";
-                extraRow.id = `extra-row-${num + 1}`;
-                extraRow.innerHTML = `
-                    <label>
-                        <input type="checkbox" id="extra-checkbox-${num + 1}" 
-                            ${data.extras[`EXTRA_CHECKBOX_${num + 1}`] === "ON" ? "checked" : ""} 
-                            onchange="toggleInputState(${num + 1})"> ${name}
-                    </label>
-                    <div class="extra-controls">
-                        <input type="text" id="extra-input-${num + 1}" 
-                            value="${data.extras[`EXTRA_INPUT_${num + 1}`]}" 
-                            ${data.extras[`EXTRA_CHECKBOX_${num + 1}`] === "ON" ? "" : "disabled"} />
-                        <button class="button ${data.extras[`EXTRA_CHECKBOX_${num + 1}`] === "ON" ? "" : "disabled"}" 
-                            id="submit-btn-${num + 1}" onclick="submitExtraData(${num + 1})">提交</button>
-                    </div>`;
-                container.appendChild(extraRow);
-            });
-        }
-
-        async function toggleInputState(num) {
-            const checkbox = document.getElementById(`extra-checkbox-${num}`);
-            const input = document.getElementById(`extra-input-${num}`);
-            const button = document.getElementById(`submit-btn-${num}`);
-            const isChecked = checkbox.checked;
-
-            if (isChecked) {
-                input.disabled = false;
-                button.classList.remove("disabled");
+              if (pathLatLngs.length > 0) {
+                polylineLayer.updateGeometries([
+                  {
+                    id: "erasePath",
+                    styleId: "style_blue",
+                    paths: pathLatLngs,
+                  },
+                ]);
+              } else {
+                console.error("No valid points in pathLatLngs");
+              }
             } else {
-                input.disabled = true;
-                button.classList.add("disabled");
+              console.warn("path2 is empty");
             }
 
-            // 发送状态更新到后端
-            await fetch("/extra", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: authToken
-                },
-                body: JSON.stringify({
-                    id: num,
-                    checkbox: isChecked,
-                    input: input.value
-                })
-            });
+            let isNextPan = true;
+
+            updateMap(newPosition, heading);
+          }
+        } else {
+          console.error("Invalid GPS format:", gpsContent);
         }
+      } else {
+        console.warn("GPS data unavailable or not a string:", gpsContent);
+      }
+    } else {
+      document.getElementById("message-content").innerHTML = "获取消息失败";
+      document.getElementById("message-content-2").innerHTML = "获取电池信息失败";
+    }
+  } catch (error) {
+    document.getElementById("message-content").innerHTML = "无法连接服务器";
+    document.getElementById("message-content-2").innerHTML = "无法连接服务器";
+    console.error("Error fetching messages:", error);
+  }
+  adjustContainerPosition();
+}
 
-        async function submitExtraData(num) {
-            const input = document.getElementById(`extra-input-${num}`).value;
+let isNextPan = true;
+let isAnimating = false; // 添加动画状态锁
 
-            await fetch("/extra", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: authToken
-                },
-                body: JSON.stringify({
-                    id: num,
-                    checkbox: document.getElementById(`extra-checkbox-${num}`).checked,
-                    input: input
-                })
-            });
+function updateMap(newPosition, heading) {
+    if (isAnimating) return; // 如果正在动画，直接跳过
 
-            alert("提交成功！");
+    isAnimating = true; // 锁定动画状态
+
+    if (isFollowing && isNextPan) {
+        map.panTo(newPosition, { duration: 500 });
+        setTimeout(() => {
+            isAnimating = false; // 动画完成后解锁
+            isNextPan = false;
+        }, 500);
+    } else if (isRotating) {
+        map.rotateTo(heading, { duration: 500 });
+        setTimeout(() => {
+            isAnimating = false;
+            isNextPan = true;
+        }, 500);
+    } else if (!isRotating) {
+        map.rotateTo(0, { duration: 500 });
+        setTimeout(() => {
+            isAnimating = false;
+            isNextPan = true;
+        }, 500);
+    }
+}
+
+    let map = null;
+
+
+
+
+
+
+function adjustContainerPosition() {
+      //const messageFrameHeight = messageFrame.offsetHeight;
+      container.style.marginTop = 0 //`${Math.max(messageFrameHeight + 20, 100)}px`; // 最小 100px
+    }
+
+// 全屏切换功能
+const fullscreenBtn = document.getElementById("fullscreen-btn");
+const mapContainer = document.getElementById("map-container");
+const gpsMapContainer = document.getElementById("gps-map-container");
+let isFullscreen = false;
+
+let currentMapType = 'vector'; // 默认矢量图
+
+// 修改 changeBaseMap 函数，支持切换并保持路况
+function changeBaseMap() {
+  const newMapType = currentMapType === 'vector' ? 'satellite' : 'vector';
+  map.setBaseMap([
+    { type: newMapType },
+    { type: 'traffic', opacity: 1 } // 始终显示路况
+  ]);
+  
+  // 更新当前类型
+  currentMapType = newMapType;
+  toggleMapBtn.classList.toggle("active-btn"); // 切换红色背景
+  // 更新按钮文字
+  const toggleBtn = document.getElementById("toggle-map-btn");
+  toggleBtn.value = currentMapType === 'vector' ? '卫星图' : '常规图';
+  
+  // 可选：显示提示
+  showToast(`已切换到${currentMapType === 'vector' ? '常规图' : '卫星图'}（含路况）`);
+}
+
+// 为切换按钮绑定事件
+const toggleMapBtn = document.getElementById("toggle-map-btn");
+
+// 点击事件（桌面端兼容）
+toggleMapBtn.addEventListener("click", (e) => {
+  e.preventDefault(); // 防止可能的默认行为干扰
+  changeBaseMap();
+});
+
+// 触摸事件（移动端优化）
+toggleMapBtn.addEventListener("touchstart", (e) => {
+  e.preventDefault(); // 阻止默认触摸行为（如滚动）
+  changeBaseMap();
+});
+
+
+function toggleFullscreen() {
+  if (isFullscreen) {
+    mapContainer.classList.remove("fullscreen");
+    gpsMapContainer.appendChild(mapContainer);
+    mapContainer.style.height = "200px";
+    fullscreenBtn.textContent = "全屏";
+    if (map) {
+      setTimeout(() => {
+        map.resize();
+        map.setCenter(map.getCenter());
+      }, 100);
+    }
+    isFullscreen = false;
+  } else {
+    mapContainer.classList.add("fullscreen");
+    document.body.appendChild(mapContainer);
+    mapContainer.style.height = "100vh";
+    fullscreenBtn.textContent = "退出全屏";
+    if (map) {
+      setTimeout(() => {
+        map.resize();
+        map.setCenter(map.getCenter());
+      }, 100);
+    }
+    isFullscreen = true;
+  }
+  adjustContainerPosition();
+}
+
+// 绑定点击和触摸事件
+fullscreenBtn.addEventListener("click", toggleFullscreen);
+fullscreenBtn.addEventListener("touchstart", (e) => {
+  e.preventDefault(); // 防止默认行为（如页面滚动）
+  toggleFullscreen();
+});
+
+
+    // 首次加载消息
+    await fetchMessages();
+
+
+    // 每 5 秒刷新一次消息
+    const messageInterval = setInterval(fetchMessages, 1000);
+
+    // 在退出登录时清除定时器
+    const originalLogout = logout;
+    logout = function () {
+      clearInterval(messageInterval);
+      originalLogout();
+    };
+
+    window.addEventListener("resize", adjustContainerPosition);
+
+        // 开关部分：每个开关与对应文字放入独立盒子，每行两个
+        const switchBox = document.createElement("div");
+        switchBox.classList.add("switch-box");
+        const buttonNames = [
+          "推送总开关",
+          "开关门:推送",
+          "挂起，休眠，启动:推送",
+          "上线，离线，行驶:推送",
+          "行驶中推送",
+          "车内有人推送",
+          "充电中推送",
+          "胎压报警推送",
+          "哨兵开关推送",
+          "行程结算显示地址"
+        ];
+        buttonNames.forEach((name, index) => {
+          const item = document.createElement("div");
+          item.classList.add("switch-item");
+          item.innerHTML = `
+            <div class="label">${name}</div>
+            <div class="toggle-switch ${data.buttons[index] === "ON" ? "on" : "off"}" onclick="toggleSwitch(this, ${index})"></div>
+          `;
+          switchBox.appendChild(item);
+        });
+        container.appendChild(switchBox);
+
+        // -------------------------------
+        // 新建一个盒子(trajectoryContainer)同时包含行驶轨迹回放按钮与时间选择
+        // -------------------------------
+        const trajectoryContainer = document.createElement("div");
+        trajectoryContainer.style.display = "flex";
+        trajectoryContainer.style.flexDirection = "column";
+        trajectoryContainer.style.alignItems = "center";
+        trajectoryContainer.style.gap = "10px";
+        trajectoryContainer.style.marginTop = "10px";
+        trajectoryContainer.style.padding = "15px";
+        trajectoryContainer.style.boxSizing = "border-box";
+        trajectoryContainer.style.borderRadius = "10px";
+        trajectoryContainer.style.background = "rgba(255,255,255,0.6)";
+
+        // 新增时间选择区域盒子
+        const timeContainer = document.createElement("div");
+        timeContainer.style.display = "flex";
+        timeContainer.style.flexDirection = "column";
+        timeContainer.style.alignItems = "center";
+        timeContainer.style.gap = "10px";
+        timeContainer.style.marginTop = "10px";
+        timeContainer.innerHTML = `
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <label for="start-time">轨迹开始时间:</label>
+            <input type="datetime-local" id="start-time">
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <label for="end-time">轨迹结束时间:</label>
+            <input type="datetime-local" id="end-time">
+          </div>
+        `;
+        container.appendChild(trajectoryContainer);
+        trajectoryContainer.appendChild(timeContainer);
+        
+        // 行驶轨迹回放按钮
+        const playbackBtn = document.createElement("button");
+        playbackBtn.textContent = "行驶轨迹回放";
+        playbackBtn.onclick = () => customAction(4);
+        playbackBtn.style.padding = "8px";
+        playbackBtn.style.fontSize = "0.8rem";
+        playbackBtn.style.backgroundColor = "#007aff";
+        playbackBtn.style.color = "white";
+        playbackBtn.style.border = "1px solid #ccc";
+        playbackBtn.style.borderRadius = "10px";
+        playbackBtn.style.cursor = "pointer";
+        trajectoryContainer.appendChild(playbackBtn);
+    
+        // 设置时间选择默认值和更改事件绑定
+        const now = new Date(new Date().getTime() + 8 * 60 * 60 * 1000);
+        const endTimeDefault = now.toISOString().slice(0, 16);
+        const startTimeDefault = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+        document.getElementById("end-time").value = endTimeDefault;
+        document.getElementById("start-time").value = startTimeDefault;
+        document.getElementById("start-time").addEventListener("change", function() {
+          const startTime = new Date(this.value);
+          const endTime = new Date(startTime.getTime() + 32 * 60 * 60 * 1000);
+          document.getElementById("end-time").value = endTime.toISOString().slice(0, 16);
+        });
+
+
+        // -----------------------
+        // 推送行程与充电分组
+        // -----------------------
+        const pushRow = document.createElement("div");
+        pushRow.style.display = "flex";
+        pushRow.style.justifyContent = "space-between";
+        pushRow.style.gap = "15px";
+        pushRow.style.marginTop = "5px";
+        pushRow.style.boxSizing = "border-box";
+
+        // 推送行程组
+        const pushTripBox = document.createElement("div");
+        pushTripBox.style.flex = "1 1 calc((100% - 20px) / 2)";
+        pushTripBox.style.boxSizing = "border-box";
+        pushTripBox.style.display = "flex";
+        pushTripBox.style.flexDirection = "column";
+        pushTripBox.style.gap = "5px";
+        pushTripBox.style.padding = "10px";
+        pushTripBox.style.border = "1px solid #ccc";
+        pushTripBox.style.borderRadius = "10px";
+        pushTripBox.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+        pushTripBox.style.background = "rgba(255,255,255,0.6)";
+
+
+        const createSlider = (valueText, defaultValue) => {
+          const valueDisplay = document.createElement("div");
+          valueDisplay.className = "valueDisplay";
+          valueDisplay.textContent = `${valueText}: ${defaultValue}`;
+          valueDisplay.style.width = "100%";
+          valueDisplay.style.textAlign = "center";
+          valueDisplay.style.boxSizing = "border-box";
+
+          const slider = document.createElement("input");
+          slider.type = "range";
+          slider.min = "1";
+          slider.max = "50";
+          slider.value = defaultValue;
+          slider.style.width = "100%";
+          slider.style.boxSizing = "border-box";
+
+          return { valueDisplay, slider };
+        };
+
+        const { valueDisplay: tripDisplay, slider: tripSlider } = createSlider("行程统计条数", data.num1);
+        tripSlider.addEventListener("input", async () => {
+          tripDisplay.textContent = `行程统计条数: ${tripSlider.value}`;
+          await updateValueToServer("NUM1", tripSlider.value);
+        });
+
+        const pushTripButton = document.createElement("button");
+        pushTripButton.textContent = "推送行程统计";
+        pushTripButton.onclick = () => customAction(1);
+        pushTripButton.style.background = "#007aff";
+        pushTripButton.style.color = "#fff";
+        pushTripButton.style.fontSize = "0.8rem";
+        pushTripButton.style.border = "1px solid #ccc";
+        pushTripButton.style.gap = "5px";
+        pushTripButton.style.padding = "6.4px 2px";
+        pushTripButton.style.borderRadius = "10px";
+        pushTripButton.style.cursor = "pointer";
+        pushTripButton.style.boxSizing = "border-box";
+        pushTripBox.appendChild(tripDisplay);
+        pushTripBox.appendChild(tripSlider);
+        pushTripBox.appendChild(pushTripButton);
+
+        // 推送充电组
+        const pushChargeBox = document.createElement("div");
+        pushChargeBox.style.flex = "1 1 calc((100% - 20px) / 2)";
+        pushChargeBox.style.boxSizing = "border-box";
+        pushChargeBox.style.display = "flex";
+        pushChargeBox.style.flexDirection = "column";
+        pushChargeBox.style.gap = "5px";
+        pushChargeBox.style.padding = "10px";
+        pushChargeBox.style.border = "1px solid #ccc";
+        pushChargeBox.style.borderRadius = "10px";
+        pushChargeBox.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+        pushChargeBox.style.background = "rgba(255,255,255,0.6)";
+
+
+        const { valueDisplay: chargeDisplay, slider: chargeSlider } = createSlider("充电统计条数", data.num2);
+        chargeSlider.addEventListener("input", async () => {
+          chargeDisplay.textContent = `充电统计条数: ${chargeSlider.value}`;
+          await updateValueToServer("NUM2", chargeSlider.value);
+        });
+
+        const pushChargeButton = document.createElement("button");
+        pushChargeButton.textContent = "推送充电统计";
+        pushChargeButton.onclick = () => customAction(2);
+        pushChargeButton.style.background = "#007aff";
+        pushChargeButton.style.color = "#fff";
+        pushChargeButton.style.fontSize = "0.8rem";
+        pushChargeButton.style.border = "1px solid #ccc";
+        pushChargeButton.style.gap = "5px";
+        pushChargeButton.style.padding = "6.4px 2px";
+        pushChargeButton.style.borderRadius = "10px";
+        pushChargeButton.style.cursor = "pointer";
+        pushChargeButton.style.boxSizing = "border-box";
+        pushChargeBox.appendChild(chargeDisplay);
+        pushChargeBox.appendChild(chargeSlider);
+        pushChargeBox.appendChild(pushChargeButton);
+
+        pushRow.appendChild(pushTripBox);
+        pushRow.appendChild(pushChargeBox);
+        container.appendChild(pushRow);
+
+        
+// -----------------------
+    // 定时推送设置分组 (包含手动推送)
+    // -----------------------
+    const scheduleRow = document.createElement("div");
+    scheduleRow.style.display = "flex";
+    scheduleRow.style.flexWrap = "wrap";
+    scheduleRow.style.justifyContent = "space-between";
+    scheduleRow.style.gap = "15px";
+    scheduleRow.style.marginTop = "5px";
+    scheduleRow.style.boxSizing = "border-box";
+    scheduleRow.style.width = "100%";
+
+    const dailyBox = document.createElement("div");
+    dailyBox.style.flex = "0 0 calc((100% - 15px) / 2)";
+    dailyBox.style.boxSizing = "border-box";
+    dailyBox.style.display = "flex";
+    dailyBox.style.flexDirection = "column";
+    dailyBox.style.gap = "5px";
+    dailyBox.style.padding = "10px";
+    dailyBox.style.border = "1px solid #ccc";
+    dailyBox.style.borderRadius = "10px";
+    dailyBox.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+    dailyBox.style.background = "rgba(255,255,255,0.6)";
+    dailyBox.style.minWidth = "100px";
+    dailyBox.style.overflow = "hidden";
+    dailyBox.innerHTML = `
+      <div style="font-size: 0.8rem; text-align: center; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">每天推送日报</div>
+      <div style="display: flex; gap: 5px;">
+        <input type="time" id="daily-time-select" style="flex: 1; padding: 6.4px; border: 1px solid #ccc; border-radius: 5px; min-width: 0;" value="${data.schedule?.daily?.time || '08:00'}">
+      </div>
+      <div class="toggle-switch ${data.buttons[10] === "ON" ? "on" : "off"}" id="daily-switch" style="margin: 5px auto;" onclick="toggleSwitch(this, 10)"></div>
+    `;
+    dailyBox.querySelector('#daily-time-select').addEventListener('change', function() {
+      updateScheduleTime('daily', this.value);
+    });
+
+    const scheduleBox = document.createElement("div");
+    scheduleBox.style.flex = "0 0 calc((100% - 15px) / 2)";
+    scheduleBox.style.boxSizing = "border-box";
+    scheduleBox.style.display = "flex";
+    scheduleBox.style.flexDirection = "column";
+    scheduleBox.style.gap = "5px";
+    scheduleBox.style.padding = "10px";
+    scheduleBox.style.border = "1px solid #ccc";
+    scheduleBox.style.borderRadius = "10px";
+    scheduleBox.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+    scheduleBox.style.background = "rgba(255,255,255,0.6)";
+    scheduleBox.style.minWidth = "100px";
+    scheduleBox.style.overflow = "hidden";
+    scheduleBox.innerHTML = `
+      <div style="font-size: 0.8rem; text-align: center; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">每周推送周报</div>
+      <div style="display: flex; gap: 5px;">
+        <select id="weekday-select" style="flex: 1; padding: 6.4px; border: 1px solid #ccc; border-radius: 5px; min-width: 0;">
+          <option value="1" ${data.schedule?.weekly?.weekday === "1" ? "selected" : ""}>星期一</option>
+          <option value="2" ${data.schedule?.weekly?.weekday === "2" ? "selected" : ""}>星期二</option>
+          <option value="3" ${data.schedule?.weekly?.weekday === "3" ? "selected" : ""}>星期三</option>
+          <option value="4" ${data.schedule?.weekly?.weekday === "4" ? "selected" : ""}>星期四</option>
+          <option value="5" ${data.schedule?.weekly?.weekday === "5" ? "selected" : ""}>星期五</option>
+          <option value="6" ${data.schedule?.weekly?.weekday === "6" ? "selected" : ""}>星期六</option>
+          <option value="0" ${data.schedule?.weekly?.weekday === "0" ? "selected" : ""}>星期日</option>
+        </select>
+        <input type="time" id="time-select" style="flex: 1; padding: 6.4px; border: 1px solid #ccc; border-radius: 5px; min-width: 0;" value="${data.schedule?.weekly?.time || '08:00'}">
+      </div>
+      <div class="toggle-switch ${data.buttons[11] === "ON" ? "on" : "off"}" id="schedule-switch" style="margin: 5px auto;" onclick="toggleSwitch(this, 11)"></div>
+    `;
+    scheduleBox.querySelector('#weekday-select').addEventListener('change', function() {
+      const time = scheduleBox.querySelector('#time-select').value;
+      updateScheduleTime('weekly', { weekday: this.value, time });
+    });
+    scheduleBox.querySelector('#time-select').addEventListener('change', function() {
+      const weekday = scheduleBox.querySelector('#weekday-select').value;
+      updateScheduleTime('weekly', { weekday, time: this.value });
+    });
+
+    const dateSwitchBox = document.createElement("div");
+    dateSwitchBox.style.flex = "0 0 calc((100% - 15px) / 2)";
+    dateSwitchBox.style.boxSizing = "border-box";
+    dateSwitchBox.style.display = "flex";
+    dateSwitchBox.style.flexDirection = "column";
+    dateSwitchBox.style.gap = "5px";
+    dateSwitchBox.style.padding = "10px";
+    dateSwitchBox.style.border = "1px solid #ccc";
+    dateSwitchBox.style.borderRadius = "10px";
+    dateSwitchBox.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+    dateSwitchBox.style.background = "rgba(255,255,255,0.6)";
+    dateSwitchBox.style.minWidth = "100px";
+    dateSwitchBox.style.overflow = "hidden";
+    dateSwitchBox.innerHTML = `
+      <div style="font-size: 0.8rem; text-align: center; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">每月推送月报</div>
+      <div style="display: flex; gap: 5px;">
+        <select id="date-select" style="flex: 1; padding: 6.4px; border: 1px solid #ccc; border-radius: 5px; min-width: 0;">
+          ${Array.from({length: 31}, (_, i) => `<option value="${i + 1}" ${data.schedule?.monthly?.date === String(i + 1) ? "selected" : ""}>${i + 1}号</option>`).join('')}
+        </select>
+        <input type="time" id="date-time-select" style="flex: 1; padding: 6.4px; border: 1px solid #ccc; border-radius: 5px; min-width: 0;" value="${data.schedule?.monthly?.time || '08:00'}">
+      </div>
+      <div class="toggle-switch ${data.buttons[12] === "ON" ? "on" : "off"}" id="date-switch" style="margin: 5px auto;" onclick="toggleSwitch(this, 12)"></div>
+    `;
+    dateSwitchBox.querySelector('#date-select').addEventListener('change', function() {
+      const time = dateSwitchBox.querySelector('#date-time-select').value;
+      updateScheduleTime('monthly', { date: this.value, time });
+    });
+    dateSwitchBox.querySelector('#date-time-select').addEventListener('change', function() {
+      const date = dateSwitchBox.querySelector('#date-select').value;
+      updateScheduleTime('monthly', { date, time: this.value });
+    });
+
+    const manualPushBox = document.createElement("div");
+    manualPushBox.style.flex = "0 0 calc((100% - 15px) / 2)";
+    manualPushBox.style.boxSizing = "border-box";
+    manualPushBox.style.display = "flex";
+    manualPushBox.style.flexDirection = "column";
+    manualPushBox.style.gap = "5px";
+    manualPushBox.style.padding = "10px";
+    manualPushBox.style.border = "1px solid #ccc";
+    manualPushBox.style.borderRadius = "10px";
+    manualPushBox.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+    manualPushBox.style.background = "rgba(255,255,255,0.6)";
+    manualPushBox.style.minWidth = "100px";
+    manualPushBox.style.overflow = "hidden";
+    manualPushBox.innerHTML = `
+      <button style="width:100%; padding:6.4px 9.6px; font-size:0.8rem; background-color:#007aff; color:#fff; border:1px solid #ccc; border-radius:5px; cursor:pointer;" onclick="customAction(5)">推送日统计</button>
+      <button style="width:100%; padding:6.4px 9.6px; font-size:0.8rem; background-color:#007aff; color:#fff; border:1px solid #ccc; border-radius:5px; cursor:pointer;" onclick="customAction(6)">推送周统计</button>
+      <button style="width:100%; padding:6.4px 9.6px; font-size:0.8rem; background-color:#007aff; color:#fff; border:1px solid #ccc; border-radius:5px; cursor:pointer;" onclick="customAction(7)">推送月统计</button>
+    `;
+
+    scheduleRow.appendChild(dailyBox);
+    scheduleRow.appendChild(scheduleBox);
+    scheduleRow.appendChild(dateSwitchBox);
+    scheduleRow.appendChild(manualPushBox);
+    container.appendChild(scheduleRow);
+
+
+
+// 通用函数：更新时间选择到后端
+async function updateScheduleTime(type, value) {
+  let payload;
+  switch (type) {
+    case 'daily':
+      payload = { type: 'daily', time: value };
+      break;
+    case 'weekly':
+      payload = { type: 'weekly', weekday: value.weekday, time: value.time };
+      break;
+    case 'monthly':
+      payload = { type: 'monthly', date: value.date, time: value.time };
+      break;
+    default:
+      console.error('Unknown schedule type:', type);
+      return;
+  }
+
+  try {
+    const response = await fetch('/schedule', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: authToken
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+      showToast('时间更新成功');
+    } else {
+      const errorData = await response.json();
+      showToast(`时间更新失败：${errorData.message}`);
+    }
+  } catch (error) {
+    console.error('Error updating schedule time:', error);
+    showToast('无法连接服务器，请稍后重试');
+  }
+}
+
+
+        
+// ---------------------------------------
+// 额外配置项（3个盒子，每行2个）
+// ---------------------------------------
+const extraNames = [
+  "胎压报警推送次数",
+  "定时推送状态(分钟)",
+  "充电定时推送(分钟)",
+  "全局电价(元)"
+];
+const extraContainer = document.createElement("div");
+extraContainer.style.display = "flex";
+extraContainer.style.flexWrap = "wrap";
+extraContainer.style.gap = "15px";
+extraContainer.style.marginTop = "5px";
+extraContainer.style.boxSizing = "border-box";
+extraContainer.style.width = "100%"; // 确保容器占满宽度
+
+extraNames.forEach((name, num) => {
+  const extraBox = document.createElement("div");
+  extraBox.style.flex = "0 0 calc((100% - 15px) / 2)"; // 固定一半宽度，不允许伸缩
+  extraBox.style.boxSizing = "border-box";
+  extraBox.style.fontSize = "0.8rem";
+  extraBox.style.overflowWrap = "break-word";
+  extraBox.style.display = "flex";
+  extraBox.style.flexDirection = "column";
+  extraBox.style.gap = "5px";
+  extraBox.style.padding = "10px";
+  extraBox.style.border = "1px solid #ccc";
+  extraBox.style.borderRadius = "10px";
+  extraBox.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+  extraBox.style.background = "rgba(255,255,255,0.6)";
+  extraBox.style.minWidth = "100px"; // 设置最小宽度以避免过窄
+  extraBox.style.overflow = "hidden"; // 处理内容溢出
+  extraBox.innerHTML = `
+    <label class="material-checkbox" style="font-size:0.8rem; white-space: normal; margin-top:3px;">
+      <input type="checkbox" id="extra-checkbox-${num + 1}" ${data.extras["EXTRA_CHECKBOX_" + (num + 1)] === "ON" ? "checked" : ""} onchange="toggleInputState(${num + 1})">
+      <span class="checkmark"></span>
+      ${name}
+    </label>
+    <input type="text" id="extra-input-${num + 1}" value="${data.extras["EXTRA_INPUT_" + (num + 1)]}" ${data.extras["EXTRA_CHECKBOX_" + (num + 1)] === "ON" ? "" : "disabled"} style="width: 90%; padding:6.4px; border:1px solid #ccc; border-radius:5px; display:block; margin:0 auto; margin-top:2px;" />
+    <button class="button ${data.extras["EXTRA_CHECKBOX_" + (num + 1)] === "ON" ? "" : "disabled"}" id="submit-btn-${num + 1}" onclick="submitExtraData(${num + 1})" style="width:100%; padding:6.4px 2px; font-size:0.8rem; background-color:#007aff; color:#fff; border:1px solid #ccc; border-radius:5px; cursor:pointer; margin-top:10px;">提交</button>
+  `;
+  extraContainer.appendChild(extraBox);
+});
+container.appendChild(extraContainer);
+
+const uploadFrame = document.createElement("div");
+uploadFrame.classList.add("message-frame");
+uploadFrame.id = "upload-frame";
+uploadFrame.style.display = "flex"; // 保持外层 flex
+uploadFrame.innerHTML = `
+  <div class="message-content" id="upload-content" style="display: flex; align-items: center; gap: 30px; flex-wrap: wrap;">
+
+    <input type="file" id="background-upload" accept="image/jpeg, image/png" style="margin: 0;">
+    <button class="confirm-btn" id="upload-btn" onclick="uploadBackground()">更换背景</button>
+
+    <img id="preview-image" src="" alt="预览" style="max-width: 200px; max-height: 200px; display: none; margin-left: 10px;">
+  </div>
+`;
+container.appendChild(uploadFrame);
+
+const fileInput = document.getElementById("background-upload");
+const previewImage = document.getElementById("preview-image");
+
+fileInput.addEventListener("change", function (e) {
+  const file = e.target.files[0];
+
+  // 如果未选择文件，则清空并隐藏预览
+  if (!file) {
+    previewImage.src = "";
+    previewImage.style.display = "none";
+    return;
+  }
+
+  // 验证文件格式（只允许 JPEG 和 PNG 格式）
+  if (file.type !== "image/jpeg" && file.type !== "image/png") {
+    showToast("只支持JPG或PNG格式的图片");
+    previewImage.src = "";
+    previewImage.style.display = "none";
+    return;
+  }
+
+  // 使用 FileReader 读取文件内容，并显示预览图
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    previewImage.src = event.target.result;
+    previewImage.style.display = "block"; // 显示预览图片
+  };
+  reader.readAsDataURL(file);
+});
+  
+        // 退出登录按钮
+        const logoutButton = document.createElement("button");
+        logoutButton.textContent = "退出登录";
+        logoutButton.onclick = logout;
+        Object.assign(logoutButton.style, {
+          position: "absolute",
+          bottom: "10px",
+          right: "10px",
+          padding: "8px 15px",
+          background: "#ff4444",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+          zIndex: "9999"
+        });
+        container.appendChild(logoutButton);
+        container.appendChild(document.createElement("br"));
+      } catch (error) {
+        console.error("Error:", error);
+        showToast("无法连接服务器，请检查网络。");
+      }
+    }
+
+    async function customAction(actionId) {
+      if (actionId === 4) {
+        const startTime = document.getElementById("start-time").value;
+        const endTime = document.getElementById("end-time").value;
+        if (!startTime || !endTime) {
+          showToast("请选择开始和结束时间");
+          return;
         }
-
-        function toggleSwitch(element, index) {
-            const isOn = element.classList.contains("on");
-            const newStatus = isOn ? "OFF" : "ON";
-            element.classList.toggle("on", !isOn);
-            element.classList.toggle("off", isOn);
-
-            fetch("/update", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: authToken
-                },
-                body: JSON.stringify({ id: index, status: newStatus })
-            });
+        const start = new Date(startTime);
+        const end = new Date(endTime);
+        if (end - start > 168 * 60 * 60 * 1000) {
+          showToast("时间间隔不能超过7天");
+          return;
         }
-    </script>
+        const newWindow = window.open("", "_blank");
+        try {
+          const response = await fetch("/path", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: authToken
+            },
+            body: JSON.stringify({ startTime, endTime })
+          });
+          if (!response.ok) {
+            const data = await response.json();
+            showToast(`获取路径失败：${data.message}`);
+            newWindow.close();
+            return;
+          }
+          const data = await response.json();
+          openCarRoutePage(newWindow, data.path);
+        } catch (error) {
+          showToast("无法获取路径数据，请稍后重试。");
+          newWindow.close();
+          console.error("Error:", error);
+        }
+        return;
+      }
+      try {
+        const response = await fetch(`/custom-action-${actionId}`, {
+          method: "POST",
+          headers: {
+            Authorization: authToken,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ actionId })
+        });
+        if (response.ok) {
+          const data = await response.json();
+          showToast(data.message);
+        } else {
+          const errorData = await response.json();
+          showToast(`操作失败：${errorData.message}`);
+        }
+      } catch (error) {
+        showToast("无法完成操作，请稍后重试。");
+        console.error("Error:", error);
+      }
+    }
+
+
+    async function uploadBackground() {
+  const fileInput = document.getElementById("background-upload");
+  const uploadBtn = document.getElementById("upload-btn");
+  const file = fileInput.files[0];
+
+  if (!file) {
+    showToast("请先选择一个图片文件");
+    return;
+  }
+
+  if (file.type !== "image/jpeg" && file.type !== "image/png") {
+  showToast("只支持JPG或PNG格式的图片");
+  return;
+}
+
+  uploadBtn.disabled = true;
+  const formData = new FormData();
+  formData.append("background", file);
+
+  try {
+    const response = await fetch("/upload", {
+      method: "POST",
+      headers: {
+        Authorization: authToken,
+      },
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      showToast(data.message || "背景图片上传成功");
+      // 延迟 1 秒后刷新页面
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      const errorData = await response.json();
+      showToast(`上传失败：${errorData.message || "未知错误"}`);
+    }
+  } catch (error) {
+    console.error("上传背景图片出错:", error);
+    showToast("无法连接服务器，请稍后重试");
+  } finally {
+    uploadBtn.disabled = false;
+    fileInput.value = "";
+  }
+}
+
+    function openCarRoutePage(newWin, pathData) {
+
+      if (!mapKey) {
+    showToast("地图密钥未加载，请重新登录");
+    console.log("传递给新窗口的 mapKey:", mapKey);
+    newWin.close();
+    return;
+  }
+
+
+      const pathJson = JSON.stringify(pathData);
+
+      const htmlContent = `
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>轨迹回放</title>
+  <style type="text/css">
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    #container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    #distance {
+      position: absolute;
+      bottom: 140px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 20px;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      z-index: 9999;
+      width: 280px;
+      text-align: left;
+    }
+    #timestamp {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-size: 20px;
+      white-space: nowrap;
+      z-index: 9999;
+      width: 280px;
+      text-align: center;
+    }
+    #player-controls {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 8px;
+    }
+    #pauseResumeBtn, #replayBtn, #speedDecreaseBtn, #speedIncreaseBtn {
+      flex: 1;
+      font-size: 16px;
+      padding: 10px;
+      border: 2px solid transparent;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #fff;
+      color: #333;
+      text-align: center;
+      box-shadow: 0 0 5px rgba(144, 238, 144, 0.7), 0 0 10px rgba(144, 238, 144, 0.5);
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    #progressSlider {
+      width: 200px;
+    }
+  </style>
+
+
+</head>
+<body>
+  <div id="container"></div>
+  <div id="distance"></div>
+  <div id="timestamp"></div>
+  <div id="player-controls">
+    <button id="speedDecreaseBtn">减慢</button>
+    <button id="pauseResumeBtn">暂停</button>
+    <button id="speedIncreaseBtn">加快</button>
+    <input type="range" id="progressSlider" value="0" min="0" style="width: 200px;" />
+  </div>
+  <script type="text/javascript">
+
+    const mapKey = "${mapKey}"; // 直接使用主页面传递的 mapKey
+    if (!mapKey) {
+      document.body.innerHTML = '<h2>地图密钥未加载</h2>';
+      throw new Error('Map key not available');
+    }
+
+    const script1 = document.createElement("script");
+    script1.charset = "utf-8";
+    script1.src = "https://map.qq.com/api/gljs?v=1.exp&key=" + mapKey;
+    document.head.appendChild(script1);
+
+    const script2 = document.createElement("script");
+    script2.charset = "utf-8";
+    script2.src = "https://map.qq.com/api/gljs?v=1.exp&key=" + mapKey + "&libraries=geometry";
+    document.head.appendChild(script2);
+
+
+script2.onload = function() {
+    // 动态加载地图脚本
+
+
+
+    // =========================================================
+    // 全局变量: 用于记录距离不清零、控制暂停、速度
+    // =========================================================
+    let accumulatedDistance = 0;       // 累加之前已走的路程
+    let currentDistanceSegment = 0;    // 当前段(本次播放过程)实时行驶距离
+
+    // pathData 注入
+    const rawPath = ${pathJson};
+    if (!rawPath || rawPath.length === 0) {
+      document.body.innerHTML = '<h2>暂无路径数据</h2>';
+      throw new Error('No path data provided.');
+    }
+    const path = rawPath.map(pt => new TMap.LatLng(pt.lat, pt.lng));
+
+    const first = path[0];
+    const last = path[path.length - 1];
+    const center = new TMap.LatLng(
+      (first.getLat() + last.getLat()) / 2, 
+      (first.getLng() + last.getLng()) / 2
+    );
+
+    const map = new TMap.Map('container', { center });
+    const bounds = new TMap.LatLngBounds();
+    path.forEach(pt => bounds.extend(pt));
+    const ne = bounds.getNorthEast(), sw = bounds.getSouthWest();
+
+    // 视野扩大一部分
+    const extraLat = (ne.getLat() - sw.getLat()) * 0.05;
+    const extraLng = (ne.getLng() - sw.getLng()) * 0.05;
+    const newNe = new TMap.LatLng(ne.getLat() + extraLat, ne.getLng() + extraLng);
+    const newSw = new TMap.LatLng(sw.getLat() - extraLat, sw.getLng() - extraLng);
+    const expandedBounds = new TMap.LatLngBounds(newSw, newNe);
+    map.fitBounds(expandedBounds);
+
+    // 多段线图层
+    const polylineLayer = new TMap.MultiPolyline({
+      map,
+      styles: {
+        style_blue: new TMap.PolylineStyle({
+          color: '#3777FF',
+          width: 4,
+          borderWidth: 2,
+          borderColor: '#FFF',
+          lineCap: 'round',
+          eraseColor: 'rgba(190,188,188,1)',
+          showArrow: true,
+          arrowOptions: { width: 8, height: 5, space: 30, animSpeed: 50 }
+        }),
+        style_gray: new TMap.PolylineStyle({
+          color: '#bebcbc',
+          width: 3,
+          borderWidth: 1,
+          borderColor: '#FFF',
+          lineCap: 'round',
+          eraseColor: 'rgba(190,188,188,1)',
+          showArrow: true,
+          arrowOptions: { width: 8, height: 5, space: 30, animSpeed: 50 }
+        })
+      },
+      geometries: [
+        {
+          id: 'erasePath',
+          styleId: 'style_blue',
+          paths: path
+        }
+      ]
+    });
+
+    // 标记图层
+    const marker = new TMap.MultiMarker({
+      map,
+      styles: {
+        'car-down': new TMap.MarkerStyle({
+          width: 40, 
+          height: 40,
+          anchor: { x: 20, y: 20 },
+          faceTo: 'map',
+          rotate: 180,
+          src: 'https://mapapi.qq.com/web/lbs/javascriptGL/demo/img/car.png'
+        }),
+        start: new TMap.MarkerStyle({
+          width: 25, 
+          height: 35,
+          anchor: { x: 16, y: 32 },
+          src: 'https://mapapi.qq.com/web/lbs/javascriptGL/demo/img/start.png'
+        }),
+        end: new TMap.MarkerStyle({
+          width: 25, 
+          height: 35,
+          anchor: { x: 16, y: 32 },
+          src: 'https://mapapi.qq.com/web/lbs/javascriptGL/demo/img/end.png'
+        })
+      },
+      geometries: [
+        { id: 'car', styleId: 'car-down', position: path[0] },
+        { id: 'start', styleId: 'start', position: path[0] },
+        { id: 'end', styleId: 'end', position: path[path.length - 1] }
+      ]
+    });
+
+    // 其他控制变量
+    let totalSegments = path.length - 1;
+    let autoSpeed = 1000;
+    let currentIndex = 0;
+    let globalOffset = 0;
+    let isPaused = false;
+    let eraseFlag = 0;
+
+    // 初始化回放
+    function startPlayback() {
+      currentIndex = 0;
+      marker.moveAlong(
+        { car: { path, speed: autoSpeed } },
+        { autoRotation: true }
+      );
+    }
+
+    // 切换暂停/继续
+    function togglePauseResume() {
+      if (!isPaused) {
+        marker.pauseMove();
+        isPaused = true;
+        document.getElementById('pauseResumeBtn').textContent = '继续';
+      } else {
+        marker.resumeMove();
+        isPaused = false;
+        document.getElementById('pauseResumeBtn').textContent = '暂停';
+      }
+    }
+
+    // 设置进度条数值
+    function setSliderValue(idx) {
+      const slider = document.getElementById('progressSlider');
+      slider.max = totalSegments;
+      slider.value = idx + globalOffset;
+    }
+
+    // 更新时间戳显示
+    function updateTimestampDisplay(idx) {
+      const timestampElem = document.getElementById("timestamp");
+      timestampElem.textContent = rawPath[idx + globalOffset]?.timestamp || '';
+    }
+
+    // 开始播放
+    startPlayback();
+
+    // 监听移动事件，实时更新距离
+    marker.on('moving', function(e) {
+      const passedLatLngs = e.car?.passedLatLngs;
+      if (passedLatLngs && passedLatLngs.length > 0) {
+        currentIndex = passedLatLngs.length - 1;
+        setSliderValue(currentIndex);
+
+        // 当前段距离
+        currentDistanceSegment = TMap.geometry.computeDistance(passedLatLngs);
+
+        // 显示 = 累计距离 + 当前段距离
+        document.getElementById('distance').innerHTML =
+          '当前行驶距离：' + Math.round(accumulatedDistance + currentDistanceSegment) + '米';
+
+        // 擦除操作
+        if (eraseFlag === 1) {
+          polylineLayer.eraseTo(
+            'erasePath',
+            currentIndex + globalOffset,
+            path[currentIndex + globalOffset]
+          );
+          eraseFlag = 0;
+        }
+        polylineLayer.eraseTo(
+          'erasePath',
+          passedLatLngs.length - 1,
+          passedLatLngs[passedLatLngs.length - 1]
+        );
+
+        updateTimestampDisplay(currentIndex);
+      }
+    });
+
+    // 拖动条事件
+    const progressSlider = document.getElementById('progressSlider');
+
+    // 拖动中（input事件）: 暂停播放，更新小车位置，并实时显示「起点到拖动点」距离
+    progressSlider.addEventListener('input', function() {
+      const idx = parseInt(this.value, 10);
+      marker.pauseMove();
+      isPaused = true;
+      document.getElementById('pauseResumeBtn').textContent = '继续';
+
+      // 小车位置同步
+      if (path[idx]) {
+        marker.updateGeometries([{ id: 'car-down', position: path[idx] }]);
+      }
+      updateTimestampDisplay(idx);
+
+      // 拖动中计算并显示“从起点到拖动点”的距离
+      const partialPaths = path.slice(0, idx + 1);
+const dragDistance = partialPaths.length < 2 ? 0 : TMap.geometry.computeDistance(partialPaths);
+      document.getElementById('distance').innerHTML =
+        '当前行驶距离：' + Math.round(dragDistance) + '米';
+    });
+
+    // 拖动结束（change事件）: 恢复/重新播放
+    progressSlider.addEventListener('change', function() {
+      const idx = parseInt(this.value, 10);
+
+      marker.stopMove();
+      globalOffset = idx;
+
+      // 拖动后，先计算拖动到 idx 的路径距离加到 accumulatedDistance
+      // （如果希望仅从真正走过的地方开始记录，可以视情况处理。
+      //  如需“跳过”没走过的部分，可把 accumulatedDistance 改成 0 或别的逻辑）
+      const slicedPath = path.slice(0, idx + 1);
+accumulatedDistance = slicedPath.length < 2 ? 0 : TMap.geometry.computeDistance(slicedPath);
+      currentDistanceSegment = 0;
+
+      // 播放剩余路径
+      const subPath = path.slice(idx);
+      const passedPath = path.slice(0, idx + 1);
+      if (!subPath.length) return;
+
+      eraseFlag = 1; 
+      marker.moveAlong(
+        { car: { path: subPath, speed: autoSpeed } },
+        { autoRotation: true }
+      );
+
+      polylineLayer.updateGeometries([
+        { id: 'passedPath', styleId: 'style_gray', paths: passedPath }
+      ]);
+      polylineLayer.updateGeometries([
+        { id: 'erasePath', styleId: 'style_blue', paths: subPath }
+      ]);
+      polylineLayer.eraseTo('erasePath', idx, path[idx]);
+
+      isPaused = false;
+      document.getElementById('pauseResumeBtn').textContent = '暂停';
+      // 改变后先赋值一次
+      document.getElementById('distance').innerHTML =
+        '当前行驶距离：' + Math.round(accumulatedDistance) + '米';
+    });
+
+    // 提示
+    function showToast(message) {
+      const toast = document.createElement("div");
+      toast.textContent = message;
+      toast.style.position = 'fixed';
+      toast.style.bottom = '100px';
+      toast.style.left = '50%';
+      toast.style.transform = 'translateX(-50%)';
+      toast.style.background = 'rgba(0, 0, 0, 0.7)';
+      toast.style.color = '#fff';
+      toast.style.padding = '10px 20px';
+      toast.style.borderRadius = '5px';
+      toast.style.zIndex = '10000';
+      document.body.appendChild(toast);
+      setTimeout(() => { toast.remove(); }, 2000);
+    }
+
+    // 更新速度: 变速前先把当前段距离累加到 accumulatedDistance
+    function updateSpeed(newSpeed) {
+      // 把当前段距离加到累计里
+      accumulatedDistance += currentDistanceSegment;
+      // 重置本段距离
+      currentDistanceSegment = 0;
+
+      showToast("当前速度: " + newSpeed);
+      autoSpeed = newSpeed;
+      marker.stopMove();
+
+      const idx = parseInt(document.getElementById('progressSlider').value, 10);
+      globalOffset = idx;
+
+      const subPath = path.slice(idx);
+      if (!subPath.length) return;
+
+      marker.moveAlong(
+        { car: { path: subPath, speed: autoSpeed } },
+        { autoRotation: true }
+      );
+      isPaused = false;
+      document.getElementById('pauseResumeBtn').textContent = '暂停';
+
+      // 显示一下当前累计距离
+      document.getElementById('distance').innerHTML =
+        '当前行驶距离：' + Math.round(accumulatedDistance) + '米';
+    }
+
+    // 按钮事件
+    document.getElementById('pauseResumeBtn').addEventListener('click', togglePauseResume);
+
+    document.getElementById('speedDecreaseBtn').addEventListener('click', function() {
+      let newSpeed = autoSpeed - 200;
+      if (newSpeed < 0) newSpeed = 0;
+      updateSpeed(newSpeed);
+    });
+
+    document.getElementById('speedIncreaseBtn').addEventListener('click', function() {
+      let newSpeed = autoSpeed + 200;
+      updateSpeed(newSpeed);
+    });
+  };
+  <\/script>
+</body>
+</html>
+      `;
+
+      // 将上面生成的 html 写入新窗口
+      newWin.document.open();
+      newWin.document.write(htmlContent);
+      newWin.document.close();
+    }
+
+    function toggleSwitch(element, index) {
+      const isOn = element.classList.contains("on");
+      const newStatus = isOn ? "OFF" : "ON";
+      element.classList.toggle("on", !isOn);
+      element.classList.toggle("off", isOn);
+      fetch("/update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authToken
+        },
+        body: JSON.stringify({ id: index, status: newStatus })
+      });
+    }
+
+    async function submitExtraData(num) {
+      const input = document.getElementById(`extra-input-${num}`).value;
+      await fetch("/extra", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authToken
+        },
+        body: JSON.stringify({
+          id: num,
+          checkbox: document.getElementById(`extra-checkbox-${num}`).checked,
+          input: input
+        })
+      });
+      showToast("提交成功！");
+    }
+
+    async function toggleInputState(num) {
+      const checkbox = document.getElementById(`extra-checkbox-${num}`);
+      const input = document.getElementById(`extra-input-${num}`);
+      const button = document.getElementById(`submit-btn-${num}`);
+      const isChecked = checkbox.checked;
+      input.disabled = !isChecked;
+      button.classList.toggle("disabled", !isChecked);
+      try {
+        const response = await fetch("/extra", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authToken
+          },
+          body: JSON.stringify({
+            id: num,
+            checkbox: isChecked,
+            input: input.value
+          })
+        });
+        if (!response.ok) {
+          console.error("Failed to update state:", await response.json());
+        }
+      } catch (error) {
+        console.error("Error updating state:", error);
+      }
+    }
+
+    async function updateValueToServer(name, value) {
+      try {
+        const response = await fetch(`/update-slider`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authToken
+          },
+          body: JSON.stringify({ name, value })
+        });
+        if (!response.ok) {
+          console.error("Failed to update slider value:", await response.json());
+        }
+      } catch (error) {
+        console.error("Error updating slider value:", error);
+      }
+    }
+  </script>
 </body>
 </html>

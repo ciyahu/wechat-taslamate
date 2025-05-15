@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>速度仪表盘</title>
+    <style>
+        body {
+            background: #ffffff;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+        }
+        .gauge {
+            width: 864px;
+            height: 864px;
+            position: relative;
+            background: radial-gradient(circle, #333, #444);
+            border-radius: 50%;
+            box-shadow: 0 0 72px rgba(0, 0, 0, 0.5);
+            border: 22px solid #555;
+            margin: 0;
+        }
+        .pointer {
+    width: 14px;
+    height: 364px;
+    background: #ff0000;
+    position: absolute;
+    top: 86px;
+    left: 50%;
+    transform-origin: bottom;
+    transform: rotate(-150deg);
+    transition: transform 0.2s ease;
+    z-index: 2;
+    box-shadow: 0 0 10px #fff, /* 内层白色发光 */
+                0 0 20px #fff, /* 中层白色发光 */
+                0 0 30px rgba(255, 255, 255, 0.8); /* 外层白色荧光，带透明度 */
+}
+        .value {
+            position: absolute;
+            bottom: 259px;
+            width: 100%;
+            text-align: center;
+            color: #ffffff;
+            font-size: 54px;
+            z-index: 2;
+            transition: opacity 0.2s ease;
+        }
+        .value-box {
+            position: absolute;
+            bottom: 257px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 108px;
+            height: 72px;
+            background-color: #000;
+            z-index: 1;
+            border-radius: 7px;
+        }
+        svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #login-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #fff;
+        }
+        #login-container input {
+            margin: 10px;
+            padding: 8px;
+            font-size: 16px;
+        }
+        #login-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #2196f3;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+        }
+        #login-container button:hover {
+            background-color: #1976d2;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-container">
+        <h2>请输入密码</h2>
+        <input type="password" id="password" placeholder="密码">
+        <button onclick="verifyPassword()">登录</button>
+        <p id="error-message" style="color: #f44336;"></p>
+    </div>
+
+    <div class="gauge hidden" id="speed">
+        <svg>
+            <g stroke="#fff" stroke-width="7" fill="none">
+                <line x1="432" y1="43" x2="432" y2="94" transform="rotate(-150 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="94" transform="rotate(-112.5 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="94" transform="rotate(-75 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="94" transform="rotate(-37.5 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="94" transform="rotate(0 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="94" transform="rotate(37.5 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="94" transform="rotate(75 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="94" transform="rotate(112.5 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="94" transform="rotate(150 432 432)"></line>
+            </g>
+            <g stroke="#aaa" stroke-width="5">
+                <line x1="432" y1="43" x2="432" y2="68" transform="rotate(-131.25 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="68" transform="rotate(-93.75 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="68" transform="rotate(-56.25 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="68" transform="rotate(-18.75 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="68" transform="rotate(18.75 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="68" transform="rotate(56.25 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="68" transform="rotate(93.75 432 432)"></line>
+                <line x1="432" y1="43" x2="432" y2="68" transform="rotate(131.25 432 432)"></line>
+            </g>
+            <g id="numbers"></g>
+        </svg>
+        <div class="pointer" id="speed-pointer"></div>
+        <div class="value-box"></div>
+        <div class="value" id="speed-value">0</div>
+    </div>
+
+    <script>
+        const speedPointer = document.getElementById('speed-pointer');
+        const speedValue = document.getElementById('speed-value');
+        const loginContainer = document.getElementById('login-container');
+        const gauge = document.getElementById('speed');
+        const errorMessage = document.getElementById('error-message');
+        let authToken = null; // 存储 Bearer Token
+
+        // Cookie 操作函数
+        function setCookie(name, value, days = 36500) {
+            const date = new Date();
+            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+            const expires = "; expires=" + date.toUTCString();
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(";");
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i].trim();
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function deleteCookie(name) {
+            document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        }
+
+        // 计算数字位置
+        function calculateTextPosition(angle, radius) {
+            const radian = (angle * Math.PI) / 180;
+            const x = 432 + radius * Math.sin(radian);
+            const y = 432 - radius * Math.cos(radian);
+            return { x, y };
+        }
+
+        // 设置数字位置
+        const radius = 270;
+        const angles = [-150, -112.5, -75, -37.5, 0, 37.5, 75, 112.5, 150];
+        const values = [0, 20, 40, 60, 80, 100, 120, 140, 160];
+
+        angles.forEach((angle, index) => {
+            const pos = calculateTextPosition(angle, radius);
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", pos.x);
+            text.setAttribute("y", pos.y);
+            text.setAttribute("fill", "#fff");
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("font-size", "50");
+            text.setAttribute("font-weight", "normal");
+            text.setAttribute("font-family", "Helvetica Neue, Arial, sans-serif");
+            text.textContent = values[index];
+            document.getElementById("numbers").appendChild(text);
+        });
+
+        // 页面加载时检查认证状态
+        document.addEventListener("DOMContentLoaded", async () => {
+            const token = getCookie("authToken");
+            if (token) {
+                authToken = `Bearer ${token}`;
+                loginContainer.style.display = "none"; // 已登录，隐藏登录框
+                gauge.style.display = "block"; // 显示仪表盘
+                startSpeedUpdate(); // 直接启动速度更新
+            } else {
+                loginContainer.style.display = "flex"; // 未登录，显示登录框
+                gauge.style.display = "none"; // 隐藏仪表盘
+            }
+        });
+
+        // 验证密码并登录
+        async function verifyPassword() {
+            const password = document.getElementById("password").value.trim();
+            try {
+                const response = await fetch("/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ password })
+                });
+                if (response.ok) {
+                    const { token } = await response.json();
+                    setCookie("authToken", token, 36500); // 存储 Token 到 Cookie
+                    authToken = `Bearer ${token}`;
+                    loginContainer.style.display = "none"; // 隐藏登录框
+                    gauge.style.display = "block"; // 显示仪表盘
+                    startSpeedUpdate(); // 启动速度更新
+                } else {
+                    errorMessage.textContent = "密码错误，请重新输入。";
+                }
+            } catch (error) {
+                errorMessage.textContent = "服务器连接失败，请稍后重试。";
+            }
+        }
+
+        // 更新速度
+        function updateSpeed(speed) {
+            const angle = -150 + (speed / 160) * 300; // 映射到 -150° 到 150°
+            speedPointer.style.transform = `rotate(${angle}deg)`;
+            speedValue.textContent = `${speed}`;
+        }
+
+        // 平滑更新速度
+        function smoothUpdateSpeed(targetSpeed) {
+            const startSpeed = parseInt(speedValue.textContent) || 0;
+            const startTime = performance.now();
+            const duration = 100; // 200ms 的过渡时间
+
+            function animate(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // 改为线性过渡（直接使用progress值）
+                const linearProgress = progress;
+
+                const currentSpeed = startSpeed + (targetSpeed - startSpeed) * linearProgress;
+                updateSpeed(Math.round(currentSpeed));
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        // 从后端 /speed 接口获取速度数据
+        async function fetchSpeedData() {
+            try {
+                const response = await fetch('/speed', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': authToken
+                    }
+                });
+                if (!response.ok) throw new Error('未授权或数据获取失败');
+                const data = await response.json();
+                const speed = data.speed || 0; // 假设 /speed 接口返回 { "speed": <value> }
+                smoothUpdateSpeed(speed); // 使用平滑更新替代直接更新
+            } catch (error) {
+                console.error('获取速度数据失败:', error);
+                if (error.message.includes('未授权')) {
+                    deleteCookie("authToken"); // 删除无效的 Token
+                    loginContainer.style.display = "flex"; // 显示登录框
+                    gauge.style.display = "none"; // 隐藏仪表盘
+                }
+            }
+        }
+
+        // 启动速度更新
+        function startSpeedUpdate() {
+            fetchSpeedData(); // 立即获取一次
+            setInterval(fetchSpeedData, 100); // 每 0.2 秒 (200ms) 更新一次
+        }
+    </script>
+</body>
+</html>
