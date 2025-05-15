@@ -9,3 +9,4 @@
 # 2.自行下载制作镜像：
 #    下载所有文件，用docker make镜像，部署
 #    运行后可在config/env文件中修改地图key,去腾讯位置平台申请一个个人免费key填进去
+![微信图片_20250515110256](https://github.com/user-attachments/assets/cdeb81d1-c5d1-452d-820b-cf457682d840)
