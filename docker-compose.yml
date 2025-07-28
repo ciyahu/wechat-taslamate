@@ -1,0 +1,76 @@
+version: "3"
+
+services:
+  teslamate:
+    image: ccr.ccs.tencentyun.com/dhuar/teslamate:latest
+    restart: always
+    environment:
+      - ENCRYPTION_KEY=teslamate
+      - DATABASE_USER=teslamate
+      - DATABASE_PASS=teslamate
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+      - MQTT_HOST=mosquitto
+    ports:
+      - 4000:4000
+    volumes:
+      - ./import:/opt/app/import
+    cap_drop:
+      - all
+
+  database:
+    image: postgres:17.3
+    restart: always
+    environment:
+      - POSTGRES_USER=teslamate
+      - POSTGRES_PASSWORD=teslamate
+      - POSTGRES_DB=teslamate
+    ports:
+      - 5432:5432
+    volumes:
+      - teslamate-db:/var/lib/postgresql/data
+
+  grafana:
+    image: ccr.ccs.tencentyun.com/dhuar/grafana:latest
+    restart: always
+    environment:
+      - DATABASE_USER=teslamate
+      - DATABASE_PASS=teslamate
+      - DATABASE_NAME=teslamate
+      - DATABASE_HOST=database
+    ports:
+      - 3000:3000
+    volumes:
+      - teslamate-grafana-data:/var/lib/grafana
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: always
+    command: mosquitto -c /mosquitto-no-auth.conf
+    ports:
+      - 1883:1883
+    volumes:
+      - mosquitto-conf:/mosquitto/config
+      - mosquitto-data:/mosquitto/data
+
+  ciyahu:
+    image: crpi-imfm7cwd6erou87s.cn-hangzhou.personal.cr.aliyuncs.com/ciyahu/can:wechat-teslamate-latest
+    restart: always
+    environment:
+      - DATABASE_USER=teslamate            # same as teslamate
+      - DATABASE_PASS=teslamate             # same as teslamate
+      - DATABASE_NAME=teslamate            # same as teslamate
+      - DATABASE_HOST=database           # same as teslamate
+      - MQTT_BROKER_HOST=mosquitto         # same as teslamate
+      - WEB_PASSWORD=teslamate
+    ports:
+      - 7777:7777
+    volumes:
+      - ./wemate:/app/config
+
+
+volumes:
+  teslamate-db:
+  teslamate-grafana-data:
+  mosquitto-conf:
+  mosquitto-data:
