@@ -20,8 +20,11 @@ teslamate设置和使用请参考官网，新安装的teslamate会数据不全�
 <img src="https://github.com/user-attachments/assets/513ddc95-f5a1-4799-a1fd-58a8ba01a8bb?raw=true" alt="微信图片_20250809110352" width="300" /> <!-- 修改：替换为 HTML img 标签，添加 width 属性 -->
 <img src="https://github.com/user-attachments/assets/103cf59d-e793-4298-979b-ae881e0d563d?raw=true" alt="微信图片_20250809110356" width="300" /> <!-- 修改：替换为 HTML img 标签，添加 width 属性 -->
 <img src="https://github.com/user-attachments/assets/16282f0f-b69a-49f9-89c7-fbb7d53fc46b?raw=true" alt="微信图片_20250728200248" width="300" /> <!-- 修改：替换为 HTML img 标签，添加 width 属性 -->
-<img src="https://github.com/user-attachments/assets/f427c675-1bc2-4c00-b3c8-37b02b028798?raw=true" alt="微信图片_20250728200252" width="300" /> <!-- 修改：替换为 HTML img 标签，添加 width 属性 -->
 <img src="https://github.com/user-attachments/assets/0afa09aa-11dc-43a4-9f3b-3897931bec2d?raw=true" alt="微信图片_20250728200303" width="300" /> <!-- 修改：替换为 HTML img 标签，添加 width 属性 -->
+<img src="https://github.com/user-attachments/assets/7e4d8823-e1e2-4b6c-98c6-8a481d62bd64?raw=true" alt="微信图片_20250809112301" width="300" /> <!-- 修改：替换为 HTML img 标签，添加 width 属性 -->
+<img src="https://github.com/user-attachments/assets/bd2fcb5a-6c63-4b89-a418-3d0a141749bb?raw=true" alt="微信图片_20250809112306" width="300" /> <!-- 修改：替换为 HTML img 标签，添加 width 属性 -->
+<img src="https://github.com/user-attachments/assets/35faa764-1479-4293-b6a8-882d61efdffb?raw=true" alt="微信图片_20250809112314" width="300" /> <!-- 修改：替换为 HTML img 标签，添加 width 属性 -->
+<img src="https://github.com/user-attachments/assets/b972e8fc-8850-4e45-8090-abfd0cc23eb6?raw=true" alt="微信图片_20250809112319" width="300" /> <!-- 修改：替换为 HTML img 标签，添加 width 属性 -->
 
 # 2.自行下载制作镜像：下载所有文件，用docker make镜像，部署  
 
