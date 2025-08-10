@@ -1,4 +1,5 @@
-防止被商业化，暂不上传最新版本源码，请见谅  
+<a href="http://wemate.ciyahu.com:1679/" target="_blank">WeMate 网站</a>
+
 程序完全本地化运行，开启穿透和中转时中转服务器仅中转已加密数据，token储存在本地  
 欢迎大家分享各种体验和bug反馈  
   
